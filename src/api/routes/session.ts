@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { ConversationManagerService } from '../../services/conversation-manager-service';
+import { ServiceContainer } from '../../services/service-container';
 import { validateRequest } from '../middleware/validation';
 import { authenticateUser } from '../middleware/auth';
 import { logger } from '../../utils/logger';
@@ -14,7 +14,7 @@ const router = Router();
 router.post('/', authenticateUser, validateRequest('sessionCreate'), async (req: Request, res: Response) => {
   try {
     const { userId } = req.body as SessionCreateRequest;
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     const sessionId = await conversationManager.startSession(userId);
     
@@ -45,7 +45,7 @@ router.post('/', authenticateUser, validateRequest('sessionCreate'), async (req:
 router.get('/:sessionId', authenticateUser, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId!;
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     // TODO: Implement getSession method in ConversationManagerService
     // const session = await conversationManager.getSession(sessionId);
@@ -76,7 +76,7 @@ router.get('/:sessionId', authenticateUser, async (req: Request, res: Response) 
 router.delete('/:sessionId', authenticateUser, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId!;
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     // TODO: Implement endSession method in ConversationManagerService
     // await conversationManager.endSession(sessionId);

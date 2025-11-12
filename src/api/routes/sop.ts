@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { SOPGeneratorService } from '../../services/sop-generator-service';
-import { DocumentExporterService } from '../../services/document-exporter-service';
+import { ServiceContainer } from '../../services/service-container';
 import { validateRequest } from '../middleware/validation';
 import { authenticateUser } from '../middleware/auth';
 import { logger } from '../../utils/logger';
@@ -16,7 +15,7 @@ router.post('/', authenticateUser, validateRequest('sopGeneration'), async (req:
   try {
     const { workflowDefinition, sopType } = req.body as SOPGenerationRequest;
     
-    const sopGenerator = new SOPGeneratorService();
+    const sopGenerator = ServiceContainer.getSOPGenerator();
     const sopDocument = await sopGenerator.generateSOP(workflowDefinition, sopType);
     
     logger.info('SOP generated successfully', { sopId: sopDocument.id, type: sopType });
@@ -80,7 +79,7 @@ router.put('/:sopId', authenticateUser, validateRequest('sopUpdate'), async (req
     const { sopId } = req.params;
     const { changes } = req.body as SOPUpdateRequest;
     
-    const sopGenerator = new SOPGeneratorService();
+    const sopGenerator = ServiceContainer.getSOPGenerator();
     
     // TODO: First get the existing SOP, then update it
     // const existingSOP = await sopGenerator.getSOP(sopId);
@@ -122,7 +121,7 @@ router.post('/:sopId/validate', authenticateUser, async (req: Request, res: Resp
   try {
     const { sopId } = req.params;
     
-    const sopGenerator = new SOPGeneratorService();
+    const sopGenerator = ServiceContainer.getSOPGenerator();
     
     // TODO: Get SOP and validate it
     // const sopDocument = await sopGenerator.getSOP(sopId);
@@ -159,7 +158,7 @@ router.post('/:sopId/export', authenticateUser, validateRequest('sopExport'), as
     const { sopId } = req.params;
     const { format, options } = req.body as SOPExportRequest;
     
-    const documentExporter = new DocumentExporterService();
+    const documentExporter = ServiceContainer.getDocumentExporter();
     
     // TODO: Get SOP document and export it
     // const sopGenerator = new SOPGeneratorService();

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { ConversationManagerService } from '../../services/conversation-manager-service';
+import { ServiceContainer } from '../../services/service-container';
 import { validateRequest } from '../middleware/validation';
 import { authenticateUser } from '../middleware/auth';
 import { logger } from '../../utils/logger';
@@ -17,7 +17,7 @@ router.post('/:sessionId/input', authenticateUser, validateRequest('conversation
     const sessionId = req.params.sessionId!;
     const { text, audioData, type } = req.body as ConversationInputRequest;
     
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     // Create user input object
     const userInput = {
@@ -62,7 +62,7 @@ router.post('/:sessionId/input', authenticateUser, validateRequest('conversation
 router.post('/:sessionId/summary', authenticateUser, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId!;
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     const summary = await conversationManager.generateSummary(sessionId);
     
@@ -87,7 +87,7 @@ router.post('/:sessionId/summary', authenticateUser, async (req: Request, res: R
 router.get('/:sessionId/status', authenticateUser, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId!;
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     const isAtLimit = conversationManager.checkIterationLimit(sessionId);
     
@@ -119,7 +119,7 @@ router.get('/:sessionId/status', authenticateUser, async (req: Request, res: Res
 router.post('/:sessionId/finalize', authenticateUser, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId!;
-    const conversationManager = new ConversationManagerService();
+    const conversationManager = ServiceContainer.getConversationManager();
     
     const workflowDefinition = await conversationManager.finalizeWorkflow(sessionId);
     
