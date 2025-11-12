@@ -2,6 +2,44 @@ import { SOPDocument, SOPSection, ExportOptions, ExportResult } from '../../mode
 import { DocumentFormat } from '../../models/enums';
 import { ChartDefinition } from '../../models/chart-models';
 import { sopPreviewStyles } from '../styles/sop-preview-styles';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { join } from 'path';
+import { Table } from 'docx';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { Document } from 'docx';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { join } from 'path';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
+import { document } from 'pdfkit/js/page';
 
 export interface SOPPreviewConfig {
   onExport?: (format: DocumentFormat, options: ExportOptions) => Promise<ExportResult>;
@@ -239,13 +277,14 @@ export class SOPPreview {
         font-size: 16px;
         opacity: 0.8;
       }
+    `;
+
       ${sopPreviewStyles}
     `;
 
     document.head.appendChild(style);
-  }
-
-  private setupEventListeners(): void {
+  }  pri
+vate setupEventListeners(): void {
     // View mode buttons
     const documentViewBtn = this.container.querySelector('#documentView') as HTMLButtonElement;
     const printViewBtn = this.container.querySelector('#printView') as HTMLButtonElement;
@@ -319,9 +358,8 @@ export class SOPPreview {
     previewContainer.innerHTML = documentHtml;
     
     this.setupDocumentEventListeners();
-  }
-
-  private generateDocumentHTML(document: SOPDocument): string {
+  } 
+ private generateDocumentHTML(document: SOPDocument): string {
     const modeClass = `preview-mode-${this.previewMode}`;
     
     return `
@@ -413,9 +451,8 @@ export class SOPPreview {
         ${this.generateSubsections(section)}
       </div>
     `;
-  }
-
-  private formatSectionContent(content: string): string {
+  }  priv
+ate formatSectionContent(content: string): string {
     // Convert line breaks to paragraphs and handle basic formatting
     return content
       .split('\n\n')
@@ -423,7 +460,7 @@ export class SOPPreview {
       .join('');
   }
 
-  private generateSectionCharts(section: SOPSection): string {
+  private generateSectionCharts(section: SOPSection | any): string {
     if (!section.charts || section.charts.length === 0) return '';
 
     const chartsHtml = section.charts.map(chartRef => `
@@ -831,7 +868,7 @@ export class SOPPreview {
     }
   }
 
-  public changePreviewMode(mode: 'document' | 'print' | 'web'): void {
+  public setPreviewMode(mode: 'document' | 'print' | 'web'): void {
     this.setPreviewMode(mode);
   }
 

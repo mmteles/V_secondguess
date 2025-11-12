@@ -6,7 +6,7 @@ export class VoiceInterface implements VoiceUserInterface {
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private microphone: MediaStreamAudioSourceNode | null = null;
-  private isListening: boolean = false;
+  private _isListening: boolean = false;
   private audioInputCallback: ((audioStream: AudioStream) => void) | null = null;
   private visualizationCanvas: HTMLCanvasElement | null = null;
   private animationId: number | null = null;
@@ -68,7 +68,7 @@ export class VoiceInterface implements VoiceUserInterface {
 
       // Start recording
       this.mediaRecorder.start(100); // Collect data every 100ms
-      this.isListening = true;
+      this._isListening = true;
 
       // Start visualization if canvas is available
       if (this.visualizationCanvas) {
@@ -93,7 +93,7 @@ export class VoiceInterface implements VoiceUserInterface {
       await this.audioContext.close();
     }
 
-    this.isListening = false;
+    this._isListening = false;
 
     // Stop visualization
     if (this.animationId) {
@@ -107,13 +107,18 @@ export class VoiceInterface implements VoiceUserInterface {
     }
   }
 
-  async playAudio(audioData: AudioBuffer): Promise<void> {
+  isListening(): boolean {
+    return this._isListening;
+  }
+
+  async playAudio(audioData: ArrayBuffer): Promise<void> {
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
 
+    const audioBuffer = await this.audioContext.decodeAudioData(audioData);
     const source = this.audioContext.createBufferSource();
-    source.buffer = audioData;
+    source.buffer = audioBuffer;
     source.connect(this.audioContext.destination);
     
     return new Promise((resolve) => {
@@ -154,7 +159,7 @@ export class VoiceInterface implements VoiceUserInterface {
     const dataArray = new Uint8Array(bufferLength);
 
     const draw = () => {
-      if (!this.isListening) return;
+      if (!this._isListening) return;
 
       this.animationId = requestAnimationFrame(draw);
 
@@ -203,7 +208,7 @@ export class VoiceInterface implements VoiceUserInterface {
 
   // Getters for component state
   get listening(): boolean {
-    return this.isListening;
+    return this._isListening;
   }
 
   get hasVoiceActivity(): boolean {
