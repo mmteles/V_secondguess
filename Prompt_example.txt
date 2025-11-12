@@ -1,0 +1,47 @@
+Generate [specific function/algorithm] in [programming language] suitable for [environment/version].  
+Requirements:  
+- [1. Exact functional description]  
+- [2. Performance/security constraints]  
+- [3. Edge cases and error handling]  
+Include clear comments explaining the code logic. Provide a step-by-step explanation of your approach.  
+If uncertain, do not guess; indicate limitations.
+
+5-Step Prompt Template for Error-Free Code Generation
+	1.	Specify Role and GoalDefine the AI’s role and precisely what coding task you want.Example: “You are an expert Python developer. Generate a function to calculate the factorial of a number.”
+	2.	Provide Context and RequirementsInclude the programming language, version, environment, and detailed functional requirements.Example: “Use Python 3.10. The function should handle input validation and return an error for negative values.”
+	3.	Add Constraints and Edge CasesMention performance targets, security considerations, error handling, and tricky edge cases.Example: “Ensure the function is optimized for inputs up to 1000 and handles large integer overflow gracefully.”
+	4.	Request Clear, Commented Code with ExplanationAsk for well-documented code with line-by-line comments and a follow-up explanation of logic.Example: “Include comments explaining each step and provide a brief summary of how the function works.”
+	5.	Set Verification and Safety InstructionsInstruct the AI to avoid guessing when uncertain and request a note on any assumptions or limitations.Example: “If unsure, state the assumptions made or indicate which parts need human review before use.”
+
+
+You are an expert Python developer.
+
+Generate a function in Python 3.10 that calculates the factorial of a number. Requirements:
+- Validate input to accept only non-negative integers.
+- Return a descriptive error message for invalid inputs.
+- Optimize for performance for inputs up to 1000.
+- Include checks to prevent integer overflow and handle edge cases correctly.
+
+Please write clean, well-commented code explaining each step. After the code, provide a summary explaining how the function works step-by-step.
+
+If uncertain about any part, clearly state the assumptions or limitations instead of guessing.
+
+
+Prompted:
+You are an expert and AI, AI agents, and MCP supporting the design of a spec for developing a AI based agent to create and generate SOPs.
+
+The product will be a conversational tool that, after start, receives a task regarding a workflow or a process(For example: automate a given workflow, improve the efficiency of a given process, prepare material for onboarding and training staff on a given procedure, etc).
+
+When the user is talking, his voice will be transcripted for validation and accuracy. 
+
+Added:
+for requirement 1 add that the SOP_Agent will offer to the user the option to read the text generated.
+
+Plus, it will always add the sentence: "That's all or there is something missing?"
+
+Iterate in this process while the user keeps adding new information to the summary. If he keeps adding, after 5 times, ask if he wants more time to review and elaborate on their description or if he wants to continue answering.
+
+Added:
+In requirements 3:
+
+Generate business modeling charts, like event diagrams, flowcharts, and any other chart that will visually support the content of the SOP.

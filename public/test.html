@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                console.log('Starting API test...');
+                
+                // Test 1: Health check
+                const healthResponse = await fetch('http://localhost:3000/api/monitoring/health');
+                console.log('Health response:', healthResponse);
+                const healthData = await healthResponse.json();
+                console.log('Health data:', healthData);
+                
+                // Test 2: Create session
+                const sessionResponse = await fetch('http://localhost:3000/api/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer mock-valid-token'
+                    },
+                    body: JSON.stringify({
+                        userId: 'test-user-' + Date.now()
+                    })
+                });
+                
+                console.log('Session response:', sessionResponse);
+                const sessionData = await sessionResponse.json();
+                console.log('Session data:', sessionData);
+                
+                resultDiv.innerHTML = `
+                    <h2>Success!</h2>
+                    <p>Health: ${healthData.status}</p>
+                    <p>Session ID: ${sessionData.sessionId}</p>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
