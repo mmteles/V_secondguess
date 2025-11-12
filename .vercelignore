@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+test-results
+test-reports
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build (will be rebuilt on Vercel)
+dist
+
+# Storage
+storage
+uploads
+temp
+
+# Documentation (not needed for deployment)
+*.md
+!README.md
+
+# Git
+.git
+.gitignore
+
+# Audio files
+*.wav
+*.mp3
+*.ogg
+*.flac
+
+# Generated documents
+*.pdf
+*.docx
