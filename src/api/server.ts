@@ -72,6 +72,11 @@ export function createApp(): Application {
   // Serve static files from public directory
   app.use(express.static('public'));
 
+  // Root route - serve index.html
+  app.get('/', (req, res) => {
+    res.sendFile('index.html', { root: 'public' });
+  });
+
   // Monitoring routes (includes health check)
   app.use('/api/monitoring', monitoringRoutes);
   

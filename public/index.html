@@ -27,6 +27,29 @@
             overflow: hidden;
         }
 
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
         .header {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
@@ -246,6 +269,12 @@
     </style>
 </head>
 <body>
+    <div class="nav-bar">
+        <a href="/" class="nav-link">🏠 Home</a>
+        <a href="/api/monitoring/health" class="nav-link" target="_blank">📊 Monitoring</a>
+        <a href="/api/dashboard" class="nav-link" target="_blank">📈 Dashboard</a>
+    </div>
+    
     <div class="container">
         <div class="header">
             <h1>🎙️ AI Voice SOP Agent</h1>
@@ -273,6 +302,9 @@
                 </div>
 
                 <div class="controls">
+                    <button class="btn btn-success" onclick="startVoiceConversation()" id="voiceBtn">
+                        🎤 Start Voice Conversation
+                    </button>
                     <button class="btn btn-secondary" onclick="startNewSession()">
                         🔄 New Session
                     </button>
@@ -325,7 +357,10 @@
         let currentWorkflow = null;
         let currentSOP = null;
 
-        const API_BASE = 'http://localhost:3000/api';
+        // Detect if running on Vercel or locally
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api' 
+            : `${window.location.origin}/api`;
         const AUTH_TOKEN = 'mock-valid-token';
 
         // Initialize the application
@@ -612,6 +647,59 @@
             errorDiv.textContent = '❌ ' + message;
             conversationArea.appendChild(errorDiv);
             conversationArea.scrollTop = conversationArea.scrollHeight;
+        }
+
+        // Start voice conversation
+        async function startVoiceConversation() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            try {
+                // Check if session exists
+                if (!currentSessionId) {
+                    await startNewSession();
+                }
+                
+                // Check for browser support
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showError('Voice input is not supported in your browser. Please use Chrome, Firefox, or Edge.');
+                    return;
+                }
+                
+                // Request microphone permission
+                voiceBtn.textContent = '🎤 Requesting permission...';
+                voiceBtn.disabled = true;
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Stop the stream immediately (we just needed permission)
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Show success message
+                addMessageToConversation('assistant', 
+                    '🎤 Voice conversation ready! Note: Full voice features require additional setup. ' +
+                    'For now, please use the text input below to describe your workflow.'
+                );
+                
+                voiceBtn.textContent = '✅ Voice Ready';
+                voiceBtn.style.background = '#10b981';
+                
+                // Focus on text input
+                document.getElementById('messageInput').focus();
+                
+            } catch (error) {
+                console.error('Voice setup failed:', error);
+                
+                if (error.name === 'NotAllowedError') {
+                    showError('Microphone permission denied. Please allow microphone access and try again.');
+                } else if (error.name === 'NotFoundError') {
+                    showError('No microphone found. Please connect a microphone and try again.');
+                } else {
+                    showError('Failed to setup voice: ' + error.message);
+                }
+                
+                voiceBtn.textContent = '🎤 Start Voice Conversation';
+                voiceBtn.disabled = false;
+            }
         }
 
         // Periodic health check
