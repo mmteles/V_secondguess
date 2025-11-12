@@ -86,3 +86,4 @@ Thumbs.db
 # Test files
 test-results/
 test-reports/
+.vercel

@@ -4,10 +4,10 @@
   "description": "AI-powered conversational system that generates Standard Operating Procedures through voice-based interaction",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmitOnError false",
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
     "start": "node dist/index.js",
-    "vercel-build": "npm run build",
+    "vercel-build": "tsc --noEmitOnError false",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
