@@ -831,7 +831,7 @@ export class SOPPreview {
     }
   }
 
-  public setPreviewMode(mode: 'document' | 'print' | 'web'): void {
+  public changePreviewMode(mode: 'document' | 'print' | 'web'): void {
     this.setPreviewMode(mode);
   }
 
@@ -871,6 +871,6 @@ export class SOPPreview {
     titleElement.textContent = 'No Document Loaded';
     typeElement.textContent = '-';
     versionElement.textContent = 'v-';
-    statusElement.textContent = '-';Element.textContent = '-';
+    statusElement.textContent = '-';
   }
 }

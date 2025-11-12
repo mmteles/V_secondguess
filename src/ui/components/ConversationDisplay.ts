@@ -1,11 +1,3 @@
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
 import { ConversationSession, TranscriptionResult, ConversationResponse, UserInput } from '../../models/conversation-models';
 import { ConversationState, UserInputType } from '../../models/enums';
 
