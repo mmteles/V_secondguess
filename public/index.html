@@ -271,8 +271,6 @@
 <body>
     <div class="nav-bar">
         <a href="/" class="nav-link">🏠 Home</a>
-        <a href="/api/monitoring/health" class="nav-link" target="_blank">📊 Monitoring</a>
-        <a href="/api/dashboard" class="nav-link" target="_blank">📈 Dashboard</a>
     </div>
     
     <div class="container">
@@ -365,6 +363,9 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Application initialized');
+            console.log('API_BASE:', API_BASE);
+            console.log('Window location:', window.location.href);
             checkAPIConnection();
             startNewSession();
         });
@@ -372,10 +373,15 @@
         // Check API connection
         async function checkAPIConnection() {
             try {
-                const response = await fetch(`${API_BASE}/monitoring/health`);
-                const health = await response.json();
+                const response = await fetch(`${API_BASE}/sessions`, {
+                    method: 'HEAD',
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
                 
-                if (health.status === 'healthy') {
+                if (response.ok || response.status === 405) {
+                    // 405 means endpoint exists but HEAD not allowed - that's fine
                     updateStatus('Connected', true);
                 } else {
                     updateStatus('API Degraded', false);
@@ -398,6 +404,8 @@
         // Start a new conversation session
         async function startNewSession() {
             try {
+                console.log('Starting new session with API_BASE:', API_BASE);
+                
                 const response = await fetch(`${API_BASE}/sessions`, {
                     method: 'POST',
                     headers: {
@@ -409,6 +417,8 @@
                     })
                 });
 
+                console.log('Session response status:', response.status);
+                
                 if (response.ok) {
                     const session = await response.json();
                     currentSessionId = session.sessionId;
@@ -438,8 +448,10 @@
                     `;
                     
                     console.log('New session started:', currentSessionId);
+                    addMessageToConversation('assistant', '✅ Session started successfully! You can now describe your workflow.');
                 } else {
-                    throw new Error('Failed to create session');
+                    const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
                 }
             } catch (error) {
                 showError('Failed to start new session: ' + error.message);
@@ -452,13 +464,25 @@
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (!message || !currentSessionId) return;
+            if (!message) {
+                showError('Please enter a message');
+                return;
+            }
+            
+            if (!currentSessionId) {
+                showError('No active session. Starting a new one...');
+                await startNewSession();
+                // Retry after session is created
+                if (!currentSessionId) return;
+            }
 
             // Add user message to conversation
             addMessageToConversation('user', message);
             input.value = '';
 
             try {
+                console.log('Sending message to session:', currentSessionId);
+                
                 const response = await fetch(`${API_BASE}/conversations/${currentSessionId}/input`, {
                     method: 'POST',
                     headers: {
@@ -471,6 +495,8 @@
                     })
                 });
 
+                console.log('Message response status:', response.status);
+
                 if (response.ok) {
                     const result = await response.json();
                     addMessageToConversation('assistant', result.message);
@@ -480,8 +506,8 @@
                         document.getElementById('generateBtn').disabled = false;
                     }
                 } else {
-                    const error = await response.json();
-                    throw new Error(error.error?.message || 'Failed to send message');
+                    const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
                 }
             } catch (error) {
                 showError('Failed to send message: ' + error.message);
@@ -649,14 +675,29 @@
             conversationArea.scrollTop = conversationArea.scrollHeight;
         }
 
+        // Voice recording state
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
         // Start voice conversation
         async function startVoiceConversation() {
             const voiceBtn = document.getElementById('voiceBtn');
+            
+            // If already recording, stop it
+            if (isRecording) {
+                stopRecording();
+                return;
+            }
             
             try {
                 // Check if session exists
                 if (!currentSessionId) {
                     await startNewSession();
+                    if (!currentSessionId) {
+                        showError('Failed to create session. Please try again.');
+                        return;
+                    }
                 }
                 
                 // Check for browser support
@@ -671,20 +712,40 @@
                 
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
-                // Stop the stream immediately (we just needed permission)
-                stream.getTracks().forEach(track => track.stop());
+                // Create MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
                 
-                // Show success message
-                addMessageToConversation('assistant', 
-                    '🎤 Voice conversation ready! Note: Full voice features require additional setup. ' +
-                    'For now, please use the text input below to describe your workflow.'
-                );
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
                 
-                voiceBtn.textContent = '✅ Voice Ready';
-                voiceBtn.style.background = '#10b981';
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    console.log('Audio recorded, size:', audioBlob.size);
+                    
+                    // For now, just show a message that voice is recorded
+                    // In a full implementation, this would be sent to the API
+                    addMessageToConversation('assistant', 
+                        '🎤 Voice recorded! Note: Voice-to-text processing requires additional backend setup. ' +
+                        'Please use the text input for now.'
+                    );
+                    
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                };
                 
-                // Focus on text input
-                document.getElementById('messageInput').focus();
+                // Start recording
+                mediaRecorder.start();
+                isRecording = true;
+                
+                voiceBtn.textContent = '⏹️ Stop Recording';
+                voiceBtn.disabled = false;
+                voiceBtn.style.background = '#ef4444';
+                
+                addMessageToConversation('assistant', '🎤 Recording... Click the button again to stop.');
                 
             } catch (error) {
                 console.error('Voice setup failed:', error);
@@ -699,6 +760,20 @@
                 
                 voiceBtn.textContent = '🎤 Start Voice Conversation';
                 voiceBtn.disabled = false;
+                voiceBtn.style.background = '#10b981';
+            }
+        }
+        
+        // Stop recording
+        function stopRecording() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                voiceBtn.textContent = '🎤 Start Voice Conversation';
+                voiceBtn.style.background = '#10b981';
             }
         }
 

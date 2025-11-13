@@ -5,50 +5,69 @@
 </head>
 <body>
     <h1>API Connection Test</h1>
-    <button onclick="testAPI()">Test API</button>
-    <div id="result"></div>
-
+    <div id="results"></div>
+    
     <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const AUTH_TOKEN = 'mock-valid-token';
+        const results = document.getElementById('results');
+        
         async function testAPI() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = 'Testing...';
+            results.innerHTML = '<p>Testing API...</p>';
             
             try {
-                console.log('Starting API test...');
-                
-                // Test 1: Health check
-                const healthResponse = await fetch('http://localhost:3000/api/monitoring/health');
-                console.log('Health response:', healthResponse);
-                const healthData = await healthResponse.json();
-                console.log('Health data:', healthData);
-                
-                // Test 2: Create session
-                const sessionResponse = await fetch('http://localhost:3000/api/sessions', {
+                // Test 1: Create session
+                results.innerHTML += '<p>1. Creating session...</p>';
+                const sessionResponse = await fetch(`${API_BASE}/sessions`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer mock-valid-token'
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
                     },
                     body: JSON.stringify({
                         userId: 'test-user-' + Date.now()
                     })
                 });
                 
-                console.log('Session response:', sessionResponse);
-                const sessionData = await sessionResponse.json();
-                console.log('Session data:', sessionData);
+                if (!sessionResponse.ok) {
+                    throw new Error(`Session creation failed: ${sessionResponse.status}`);
+                }
                 
-                resultDiv.innerHTML = `
-                    <h2>Success!</h2>
-                    <p>Health: ${healthData.status}</p>
-                    <p>Session ID: ${sessionData.sessionId}</p>
-                `;
+                const session = await sessionResponse.json();
+                results.innerHTML += `<p>✅ Session created: ${session.sessionId}</p>`;
+                
+                // Test 2: Send message
+                results.innerHTML += '<p>2. Sending message...</p>';
+                const messageResponse = await fetch(`${API_BASE}/conversations/${session.sessionId}/input`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify({
+                        text: 'Hello, I need help creating an SOP for customer onboarding',
+                        type: 'text'
+                    })
+                });
+                
+                if (!messageResponse.ok) {
+                    throw new Error(`Message sending failed: ${messageResponse.status}`);
+                }
+                
+                const messageResult = await messageResponse.json();
+                results.innerHTML += `<p>✅ Message sent successfully</p>`;
+                results.innerHTML += `<p>AI Response: ${messageResult.message}</p>`;
+                
+                results.innerHTML += '<p><strong>All tests passed! ✅</strong></p>';
                 
             } catch (error) {
-                console.error('Error:', error);
-                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                results.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                console.error('Test failed:', error);
             }
         }
+        
+        // Run tests on load
+        testAPI();
     </script>
 </body>
 </html>
