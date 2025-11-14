@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Diagnostic</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #00ff00;
+        }
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #ffff00; }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Connection Diagnostic Tool</h1>
+    <p>This tool will help diagnose connection issues.</p>
+    
+    <button onclick="runTests()">▶ Run Tests</button>
+    <button onclick="location.href='/'">← Back to App</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function runTests() {
+            results.innerHTML = '<p class="info">Running tests...</p>';
+            
+            const tests = [];
+            
+            // Test 1: Check protocol
+            tests.push({
+                name: 'Protocol Check',
+                test: () => {
+                    const protocol = window.location.protocol;
+                    return {
+                        pass: protocol === 'http:' || protocol === 'https:',
+                        message: `Protocol: ${protocol}`,
+                        details: protocol === 'file:' ? 'ERROR: You opened the HTML file directly! Use http://localhost:3000 instead.' : 'OK'
+                    };
+                }
+            });
+            
+            // Test 2: Check hostname
+            tests.push({
+                name: 'Hostname Check',
+                test: () => {
+                    const hostname = window.location.hostname;
+                    return {
+                        pass: hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('vercel.app'),
+                        message: `Hostname: ${hostname}`,
+                        details: hostname === 'localhost' ? 'OK' : 'Warning: Expected localhost'
+                    };
+                }
+            });
+            
+            // Test 3: Check port
+            tests.push({
+                name: 'Port Check',
+                test: () => {
+                    const port = window.location.port;
+                    return {
+                        pass: port === '3000' || port === '',
+                        message: `Port: ${port || 'default'}`,
+                        details: port === '3000' ? 'OK' : 'Warning: Expected port 3000'
+                    };
+                }
+            });
+            
+            // Test 4: API Health Check
+            tests.push({
+                name: 'API Health Check',
+                test: async () => {
+                    try {
+                        const response = await fetch('http://localhost:3000/api/monitoring/health');
+                        const data = await response.json();
+                        return {
+                            pass: response.ok && data.status === 'healthy',
+                            message: `API Status: ${data.status}`,
+                            details: response.ok ? 'OK - Server is running' : 'FAIL - Server not responding'
+                        };
+                    } catch (error) {
+                        return {
+                            pass: false,
+                            message: 'API Status: ERROR',
+                            details: `Cannot connect: ${error.message}`
+                        };
+                    }
+                }
+            });
+            
+            // Test 5: Session Creation
+            tests.push({
+                name: 'Session Creation Test',
+                test: async () => {
+                    try {
+                        const response = await fetch('http://localhost:3000/api/sessions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer mock-valid-token'
+                            },
+                            body: JSON.stringify({ userId: 'diagnostic-test' })
+                        });
+                        const data = await response.json();
+                        return {
+                            pass: response.ok && data.sessionId,
+                            message: `Session: ${data.sessionId ? 'Created' : 'Failed'}`,
+                            details: data.sessionId ? `ID: ${data.sessionId.substring(0, 30)}...` : 'FAIL'
+                        };
+                    } catch (error) {
+                        return {
+                            pass: false,
+                            message: 'Session: ERROR',
+                            details: `Cannot create: ${error.message}`
+                        };
+                    }
+                }
+            });
+            
+            // Run all tests
+            let html = '<h2>Test Results:</h2>';
+            let allPassed = true;
+            
+            for (const test of tests) {
+                html += `<div class="test">`;
+                html += `<strong>${test.name}</strong><br>`;
+                
+                try {
+                    const result = await test.test();
+                    const className = result.pass ? 'pass' : 'fail';
+                    const icon = result.pass ? '✅' : '❌';
+                    
+                    html += `<span class="${className}">${icon} ${result.message}</span><br>`;
+                    html += `<small>${result.details}</small>`;
+                    
+                    if (!result.pass) allPassed = false;
+                } catch (error) {
+                    html += `<span class="fail">❌ Error: ${error.message}</span>`;
+                    allPassed = false;
+                }
+                
+                html += `</div>`;
+            }
+            
+            // Summary
+            html += '<h2>Summary:</h2>';
+            if (allPassed) {
+                html += '<p class="pass">✅ All tests passed! The application should work.</p>';
+                html += '<p>If you still see errors, try:</p>';
+                html += '<ul>';
+                html += '<li>Clear browser cache (Ctrl+Shift+R)</li>';
+                html += '<li>Try incognito/private mode</li>';
+                html += '<li>Check browser console (F12) for errors</li>';
+                html += '</ul>';
+            } else {
+                html += '<p class="fail">❌ Some tests failed. See details above.</p>';
+                html += '<p>Common fixes:</p>';
+                html += '<ul>';
+                html += '<li>Make sure server is running: <code>npm run dev</code></li>';
+                html += '<li>Access via http://localhost:3000 (not file://)</li>';
+                html += '<li>Check firewall settings</li>';
+                html += '</ul>';
+            }
+            
+            // Environment info
+            html += '<h2>Environment Info:</h2>';
+            html += '<div class="test">';
+            html += `<strong>Current URL:</strong> ${window.location.href}<br>`;
+            html += `<strong>Protocol:</strong> ${window.location.protocol}<br>`;
+            html += `<strong>Hostname:</strong> ${window.location.hostname}<br>`;
+            html += `<strong>Port:</strong> ${window.location.port || 'default'}<br>`;
+            html += `<strong>Browser:</strong> ${navigator.userAgent}<br>`;
+            html += '</div>';
+            
+            results.innerHTML = html;
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>

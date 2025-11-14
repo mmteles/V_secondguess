@@ -271,6 +271,7 @@
 <body>
     <div class="nav-bar">
         <a href="/" class="nav-link">🏠 Home</a>
+        <a href="/dashboard" class="nav-link" target="_blank">📈 Dashboard</a>
     </div>
     
     <div class="container">
@@ -362,33 +363,68 @@
         const AUTH_TOKEN = 'mock-valid-token';
 
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('Application initialized');
             console.log('API_BASE:', API_BASE);
             console.log('Window location:', window.location.href);
-            checkAPIConnection();
-            startNewSession();
+            console.log('Protocol:', window.location.protocol);
+            console.log('Hostname:', window.location.hostname);
+            console.log('Browser:', navigator.userAgent);
+            
+            // Check if opened via file:// protocol
+            if (window.location.protocol === 'file:') {
+                showError('⚠️ Please open this page through the server at http://localhost:3000 (not by opening the HTML file directly)');
+                updateStatus('Wrong URL', false);
+                return;
+            }
+            
+            // Check if hostname is correct
+            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && !window.location.hostname.includes('vercel.app')) {
+                showError('⚠️ Unexpected hostname: ' + window.location.hostname + '. Expected localhost or vercel.app');
+            }
+            
+            // First check API connection
+            await checkAPIConnection();
+            
+            // Wait a bit for server to be ready
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Then start session
+            await startNewSession();
         });
 
         // Check API connection
         async function checkAPIConnection() {
             try {
-                const response = await fetch(`${API_BASE}/sessions`, {
-                    method: 'HEAD',
+                console.log('Checking API connection...');
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(`${API_BASE}/monitoring/health`, {
+                    method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${AUTH_TOKEN}`
-                    }
+                    },
+                    signal: controller.signal
                 });
                 
-                if (response.ok || response.status === 405) {
-                    // 405 means endpoint exists but HEAD not allowed - that's fine
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const health = await response.json();
+                    console.log('API health check:', health);
                     updateStatus('Connected', true);
+                    return true;
                 } else {
+                    console.warn('API health check failed:', response.status);
                     updateStatus('API Degraded', false);
+                    return false;
                 }
             } catch (error) {
-                updateStatus('API Offline', false);
                 console.error('API connection failed:', error);
+                updateStatus('API Offline', false);
+                return false;
             }
         }
 
@@ -406,6 +442,9 @@
             try {
                 console.log('Starting new session with API_BASE:', API_BASE);
                 
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
                 const response = await fetch(`${API_BASE}/sessions`, {
                     method: 'POST',
                     headers: {
@@ -414,8 +453,11 @@
                     },
                     body: JSON.stringify({
                         userId: 'web-user-' + Date.now()
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
                 console.log('Session response status:', response.status);
                 
@@ -454,8 +496,54 @@
                     throw new Error(errorData.error?.message || `HTTP ${response.status}`);
                 }
             } catch (error) {
-                showError('Failed to start new session: ' + error.message);
                 console.error('Session creation failed:', error);
+                console.error('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Provide more helpful error messages
+                let errorMessage = 'Failed to start new session: ';
+                if (error.name === 'AbortError') {
+                    errorMessage += 'Request timed out. Server may be slow or not responding.';
+                } else if (error.message === 'Failed to fetch' || error.message.includes('Load failed')) {
+                    errorMessage += 'Cannot connect to server. Is the server running at ' + API_BASE + '?';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMessage += 'Network error. Check your internet connection and server status.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
+                
+                // Update status to show disconnected
+                updateStatus('Disconnected', false);
+                
+                // Add a retry button to the error message
+                const conversationArea = document.getElementById('conversationArea');
+                const retryDiv = document.createElement('div');
+                retryDiv.style.cssText = 'text-align: center; margin: 20px 0;';
+                retryDiv.innerHTML = '<button class="btn btn-primary" onclick="retryConnection()">🔄 Retry Connection</button>';
+                conversationArea.appendChild(retryDiv);
+            }
+        }
+        
+        // Retry connection function
+        async function retryConnection() {
+            console.log('Retrying connection...');
+            const conversationArea = document.getElementById('conversationArea');
+            conversationArea.innerHTML = `
+                <div class="message assistant">
+                    <strong>AI Assistant:</strong> Retrying connection...
+                </div>
+            `;
+            
+            const connected = await checkAPIConnection();
+            if (connected) {
+                await startNewSession();
+            } else {
+                showError('Still cannot connect to server. Please check that the server is running.');
             }
         }
 
@@ -510,8 +598,17 @@
                     throw new Error(error.error?.message || `HTTP ${response.status}`);
                 }
             } catch (error) {
-                showError('Failed to send message: ' + error.message);
                 console.error('Message sending failed:', error);
+                
+                // Provide more helpful error messages
+                let errorMessage = 'Failed to send message: ';
+                if (error.message === 'Failed to fetch' || error.message.includes('Load failed')) {
+                    errorMessage += 'Cannot connect to server. Please make sure the server is running at ' + API_BASE;
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
             }
         }
 
