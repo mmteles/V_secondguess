@@ -1,0 +1,4 @@
+[submodule "secondguess"]
+	path = secondguess
+	url = https://github.com/kw0ntum/secondguess.git
+	branch = consolidated-main

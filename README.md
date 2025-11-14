@@ -1,216 +1,161 @@
-# V_secondguess - AI Voice SOP Agent
+# V_secondguess - Vercel Deployment Wrapper
 
-AI-powered conversational system that generates Standard Operating Procedures through voice-based interaction.
+This repository is a thin wrapper for deploying the [secondguess](https://github.com/kw0ntum/secondguess) application to Vercel.
 
-## 🚀 Quick Deploy to Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mmteles/V_secondguess)
-
-### One-Click Deployment
-
-1. Click the "Deploy with Vercel" button above
-2. Sign in to Vercel with GitHub
-3. Add your environment variables:
-   - `STT_API_KEY` - Your Speech-to-Text API key
-   - `TTS_API_KEY` - Your Text-to-Speech API key
-   - `NODE_ENV=production`
-4. Click "Deploy"
-5. Done! Your app is live 🎉
-
-## 📋 Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-- Google Cloud API keys (or Azure/AWS)
-
-## 🔧 Local Development
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/mmteles/V_secondguess.git
-cd V_secondguess
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your API keys:
-```env
-STT_API_KEY=your_speech_to_text_api_key
-TTS_API_KEY=your_text_to_speech_api_key
-```
-
-See [API_SETUP.md](./API_SETUP.md) for detailed instructions.
-
-### 4. Run development server
-
-```bash
-npm run dev
-```
-
-The server will start at `http://localhost:3000`
-
-### 5. Build for production
-
-```bash
-npm run build
-npm start
-```
-
-## 📚 Documentation
-
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete Vercel deployment guide
-- **[API_SETUP.md](./API_SETUP.md)** - How to get and configure API keys
-- **[UPDATES.md](./UPDATES.md)** - Package updates and changes
-
-## 🏗️ Project Structure
+## 📁 Structure
 
 ```
 V_secondguess/
-├── api/                 # Vercel serverless functions
-├── src/
-│   ├── api/            # Express API routes
-│   ├── services/       # Business logic services
-│   ├── models/         # Data models
-│   ├── ui/             # UI components
-│   └── utils/          # Utilities
-├── public/             # Static files
-├── dist/               # Build output
-└── vercel.json         # Vercel configuration
+├── secondguess/          # Git submodule - main application code
+├── api/                  # Vercel serverless function entry point
+├── vercel.json           # Vercel deployment configuration
+├── .vercel/              # Vercel deployment metadata
+├── .env                  # Environment variables (not in git)
+└── .env.example          # Environment variables template
 ```
 
-## 🔑 Environment Variables
+## 🚀 Quick Start
 
-### Required
-- `STT_API_KEY` - Speech-to-Text API key
-- `TTS_API_KEY` - Text-to-Speech API key
-- `NODE_ENV` - Environment (development/production)
-
-### Optional
-- `PORT` - Server port (default: 3000)
-- `STT_PROVIDER` - STT provider (google/azure/aws)
-- `TTS_PROVIDER` - TTS provider (google/azure/aws)
-- `CONVERSATION_MODEL` - AI model (default: gpt-4)
-
-See `.env.example` for all available options.
-
-## 🧪 Testing
+### 1. Clone with Submodule
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run linter
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
+git clone --recursive https://github.com/mmteles/V_secondguess.git
+cd V_secondguess
 ```
 
-## 📦 Available Scripts
+If you already cloned without `--recursive`:
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run lint` - Run linter
-- `npm run vercel-build` - Build for Vercel deployment
+```bash
+git submodule init
+git submodule update
+```
 
-## 🔒 Security
+### 2. Install Dependencies
 
-- ✅ 0 vulnerabilities
-- ✅ All packages up to date
-- ✅ Security headers enabled (Helmet)
-- ✅ Rate limiting configured
-- ✅ CORS protection
+```bash
+cd secondguess
+npm install
+```
 
-## 🌐 API Endpoints
+### 3. Set Up Environment
 
-- `POST /api/session` - Create new session
-- `POST /api/conversation` - Send conversation input
-- `GET /api/sop/:id` - Get SOP document
-- `POST /api/sop/generate` - Generate SOP
-- `GET /api/monitoring/health` - Health check
-- `GET /api/dashboard/stats` - Dashboard statistics
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-## 🛠️ Tech Stack
+### 4. Run Locally
 
-- **Runtime**: Node.js + TypeScript
-- **Framework**: Express.js
-- **Speech**: Google Cloud Speech-to-Text & Text-to-Speech
-- **PDF**: pdf-lib, PDFKit
-- **Documents**: docx
-- **Charts**: Chart.js, D3.js, Mermaid
-- **Testing**: Jest
-- **Deployment**: Vercel
+```bash
+cd secondguess
+npm run dev
+```
 
-## 📊 Features
+Open http://localhost:3000
 
-- 🎤 Voice-based interaction
-- 📝 Automatic SOP generation
-- 🔄 Iterative refinement
-- 📊 Visual diagrams and charts
-- 📄 Multiple export formats (PDF, DOCX, HTML, Markdown)
-- 🔍 Quality checkpoints
-- 📈 Real-time monitoring
-- 🔐 Secure and scalable
+## 📚 Documentation
+
+All documentation is in the `secondguess/` submodule:
+
+- **[QUICK_START.md](secondguess/QUICK_START.md)** - Quick start guide
+- **[HOW_TO_ACCESS.md](secondguess/HOW_TO_ACCESS.md)** - How to access the application
+- **[DEPLOYMENT.md](secondguess/DEPLOYMENT.md)** - Deployment guide
+- **[TROUBLESHOOTING.md](secondguess/TROUBLESHOOTING.md)** - Troubleshooting guide
+- **[API_SETUP.md](secondguess/API_SETUP.md)** - API setup instructions
+
+## 🔧 Vercel Deployment
+
+This repository is configured for automatic deployment to Vercel.
+
+### Deployment URL
+https://v-secondguess.vercel.app
+
+### How It Works
+
+1. **Vercel Configuration**: `vercel.json` defines routing and build settings
+2. **Serverless Entry Point**: `api/index.ts` exports the Express app for Vercel
+3. **Submodule**: The main application code is in the `secondguess` submodule
+4. **Build Process**: Vercel builds the TypeScript code from the submodule
+
+### Manual Deployment
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+## 🔄 Updating the Submodule
+
+When the `secondguess` repository is updated:
+
+```bash
+# Update submodule to latest commit
+git submodule update --remote secondguess
+
+# Commit the submodule update
+git add secondguess
+git commit -m "Update secondguess submodule"
+git push
+```
+
+## 🌿 Branches
+
+- **main** - Production deployment
+- **secondguess submodule** - Points to `consolidated-main` branch
+
+## 📝 Environment Variables
+
+Required environment variables (see `.env.example`):
+
+```env
+# Google Cloud API Keys (optional - mocks work without them)
+GOOGLE_CLOUD_API_KEY=your-key-here
+
+# Server Configuration
+NODE_ENV=production
+PORT=3000
+```
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────┐
+│         Vercel Platform             │
+│  ┌───────────────────────────────┐  │
+│  │    V_secondguess (Wrapper)    │  │
+│  │  ┌─────────────────────────┐  │  │
+│  │  │  secondguess (Submodule)│  │  │
+│  │  │  - src/                 │  │  │
+│  │  │  - public/              │  │  │
+│  │  │  - All application code │  │  │
+│  │  └─────────────────────────┘  │  │
+│  │  - api/index.ts (Entry)       │  │
+│  │  - vercel.json (Config)       │  │
+│  └───────────────────────────────┘  │
+└─────────────────────────────────────┘
+```
+
+## 🔗 Related Repositories
+
+- **Main Application**: [kw0ntum/secondguess](https://github.com/kw0ntum/secondguess)
+- **Deployment Wrapper**: [mmteles/V_secondguess](https://github.com/mmteles/V_secondguess) (this repo)
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+All application code changes should be made in the [secondguess](https://github.com/kw0ntum/secondguess) repository.
 
-## 📝 License
+This repository should only contain:
+- Vercel deployment configuration
+- Serverless function entry point
+- Deployment-specific documentation
 
-MIT License - see [LICENSE](LICENSE) file for details
+## 📄 License
 
-## 🆘 Support
-
-- **Documentation**: See docs in this repository
-- **Issues**: [GitHub Issues](https://github.com/mmteles/V_secondguess/issues)
-- **Vercel Support**: [vercel.com/support](https://vercel.com/support)
-
-## 🎯 Roadmap
-
-- [ ] Add more AI models support
-- [ ] Implement real-time collaboration
-- [ ] Add more export templates
-- [ ] Mobile app support
-- [ ] Multi-language support
-- [ ] Advanced analytics dashboard
-
-## ⚡ Performance
-
-- Serverless architecture
-- Auto-scaling
-- Edge caching
-- Optimized bundle size
-- Fast cold starts
-
-## 🔄 Updates
-
-Last updated: November 12, 2025
-
-See [UPDATES.md](./UPDATES.md) for recent changes.
+MIT
 
 ---
 
-**Made with ❤️ for better documentation**
-
-**Deploy now**: [vercel.com/new/clone?repository-url=https://github.com/mmteles/V_secondguess](https://vercel.com/new/clone?repository-url=https://github.com/mmteles/V_secondguess)
+**Note**: This is a deployment wrapper. For application documentation and development, see the [secondguess](https://github.com/kw0ntum/secondguess) repository.
